@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 
 
 def translate_dataframe(df, api_key, target_language='en'):
@@ -37,3 +38,25 @@ def translate_dataframe(df, api_key, target_language='en'):
     return translated_df
 
 
+def clean_manufacturing_files(path):
+    data = pd.read_excel(path, header=None)
+
+    #removing rows and collumns that are useless
+    data = data.iloc[5:]
+    data = data.drop(data.columns[0], axis=1)
+    data = data.drop(data.columns[0], axis=1)
+
+    #changing the first collumn for english var
+    col_to_move = data.columns[12]
+    data = data[[col_to_move] + [col for col in data.columns if col != col_to_move]]
+
+    data = data[data.iloc[:, 0].isin(["Mining and manufacturing", "Mining and quarrying", "Manufacturing"])]
+
+    data['Average'] = data.iloc[:, 2:14].mean(axis=1)
+    data = data.drop(columns=data.columns[2:14])
+
+    data.columns = [0, 1]
+    data.index = [0, 1, 2]
+    data
+
+    return data
